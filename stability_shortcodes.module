@@ -1,0 +1,23 @@
+<?php 
+
+function stability_shortcodes_theme() {
+	$res = [];
+
+    /** @var \Drupal\shortcode\ShortcodeService $type */
+    $type = \Drupal::service('shortcode');
+
+    $shortcodes = $type->getShortcodePlugins(null);
+    /** @var \Drupal\shortcode\ShortcodePluginManager $type */
+    $type = \Drupal::service('plugin.manager.shortcode');
+
+    foreach ($shortcodes as $shortcode_info) {
+		if($shortcode_info['provider'] !== 'stability_shortcodes')
+			continue;
+
+      	/** @var \Drupal\shortcode\Plugin\ShortcodeInterface $shortcode */
+      	$shortcode = $type->createInstance($shortcode_info['id']);
+      	$res += $shortcode->getThemeRegistry();
+    }
+
+	return $res;
+}

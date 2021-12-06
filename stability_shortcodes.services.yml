@@ -1,0 +1,4 @@
+services:
+  shortcode:
+    class: Drupal\stability_shortcodes\StabilityShortcodesService
+    arguments: ['@plugin.manager.shortcode']

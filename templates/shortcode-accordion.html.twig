@@ -1,0 +1,18 @@
+
+<div {{ attributes }}>
+    <div class="panel-heading">
+      <h4 class="panel-title">
+	  	<!-- 
+		  <a data-toggle="collapse" class = "' . (isset($attrs['active']) && $attrs['active'] ? '' : 'collapsed') . '" data-parent="#accordions-' . $accordions .'" href="#accordion-' .  $accordion_count . '">
+		  -->
+        <a data-toggle="collapse" class = "{{active ? '' : ' collapsed ' }}" data-parent="#accordions-{{accordions}}" href="#accordion-{{accordion_count}}">
+          {{attributes.title}}
+        </a>
+      </h4>
+    </div>
+    <div id="accordion-{{accordion_count}}" class="panel-collapse collapse {{active ? ' in ' : '' }}">
+      <div class="panel-body">
+        {{text|raw}}
+      </div>
+    </div>
+  </div>
