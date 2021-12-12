@@ -1,0 +1,8 @@
+{% set attributes = color ? attributes.addClass(color) : attributes %}
+{% set attributes = dismissable ? attributes.addClass('alert-dismissable') : attributes %}
+<div {{attributes.addClass('alert')}}>
+	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">
+		<i class="fa fa-times"></i>
+	</button>
+	{{text | raw}}
+</div>

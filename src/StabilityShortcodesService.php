@@ -72,6 +72,8 @@ class StabilityShortcodesService extends ShortcodeService {
 
   public function walkUpRender($from) {
     $renderf = function($item) {
+      if(property_exists($item, 'processed') && !empty($item->processed))
+        return $item->render_text;
       //$shortcode->process($attr, $m[4]) . $m[5];
       $cr = '';
       //collect childrens text for content render
@@ -83,6 +85,18 @@ class StabilityShortcodesService extends ShortcodeService {
         $item->shortcode_plugin->init_attributes :
         $m[3];
       $item->render_text = $m[1] . $item->shortcode_plugin->process($this->parseAttrs($attr), $cr) . $m[5];
+      $item->processed = true;
+      if(property_exists($item, 'parent') && !empty($item->parent)) {
+        $p = $item->parent;
+        while($p) {
+          $p->childs_not_processed--;
+          if(property_exists($item, 'parent') && !empty($item->parent)) {
+            $p = $p->parent;
+          } else {
+            $p = null;
+          }
+        }
+      }
       return $item->render_text;
     };
 
@@ -97,14 +111,21 @@ class StabilityShortcodesService extends ShortcodeService {
     while(!empty($parents)) {
       $new_parents = [];
       foreach($parents as $f) {
-        if(!(property_exists($f, 'parent') && !empty($f->parent)))
+        if(!property_exists($f, 'parent') || empty($f->parent))
           continue;
+        if($f->childs_not_processed)
+          continue; //branch not ready, we will be back via its other subbranch
         foreach($f->parent->children as $c) {
+          if($c->childs_not_processed) {
+            //we will try $c in next iteration, then branch might be ready
+            $new_parents[] = $c;
+            continue;
+          }
           if(empty($c->is_shortcode))
             continue;
           $renderf($c);
-          $new_parents[] = $f->parent;
         }
+        $new_parents[] = $f->parent;
       }
       $parents = $new_parents;
     }
@@ -135,10 +156,25 @@ class StabilityShortcodesService extends ShortcodeService {
     $heap = [];
     $heap_index = [];
 
-    $tree = (object)['children'=>[]];
+    $tree = (object)['children'=>[], 'childs_not_processed'=>0];
     $cur_parent_node = $tree;
+    $cur_parent_level = 0;
 
     $lowest_shortcodes = [];
+
+    $incc = function ($item) {
+      if(property_exists($item, 'parent') && !empty($item->parent)) {
+        $p = $item->parent;
+        while($p) {
+          $p->childs_not_processed++;
+          if(property_exists($item, 'parent') && !empty($item->parent)) {
+            $p = $p->parent;
+          } else {
+            $p = null;
+          }
+        }
+      }
+    };
 
     foreach($chunks as $c) {
       $escaped = FALSE;
@@ -166,13 +202,17 @@ class StabilityShortcodesService extends ShortcodeService {
 
         if (!$this->isValidShortcodeTag($tag)) {
           // This is not a valid shortcode tag, or the tag is not enabled.
-          $cur_parent_node->children[] =(object)[
+          $new = (object)[
             'text'=> $original_text, 
             'is_shortcode'=>false, 
             'm'=>[], 
             'children'=>[],
             'parent'=> $cur_parent_node,
+            'level' => $cur_parent_level+1,
+            'childs_not_processed' => 0
           ];
+          $cur_parent_node->children[] = $new;
+          //$incc($new);
         }
         // This is a valid shortcode tag, and self-closing.
         elseif (substr($c, -1, 1) == '/') {
@@ -190,10 +230,13 @@ class StabilityShortcodesService extends ShortcodeService {
             'is_shortcode'=>true, 
             'm'=>$m,
             'children'=>[],
-            'parent'=> $cur_parent_node
+            'parent'=> $cur_parent_node,
+            'level' => $cur_parent_level+1,
+            'childs_not_processed' => 0
           ];
           $cur_parent_node->children[] = $new;
           $lowest_shortcodes[] = $new;
+          $incc($new);
         }
         // A closing tag, we can process the heap.
         elseif ($c[0] == '/') {
@@ -214,6 +257,7 @@ class StabilityShortcodesService extends ShortcodeService {
           }
 
           $cur_parent_node = $cur_parent_node->parent;
+          $cur_parent_level = $cur_parent_node->level;
 
         } else {
           //new shortcode opening, is valid
@@ -231,21 +275,28 @@ class StabilityShortcodesService extends ShortcodeService {
             'm' => $m,
             'children'=>[],
             'parent'=> $cur_parent_node,
-            'tag' => $tag
+            'tag' => $tag,
+            'level' => $cur_parent_level+1,
+            'childs_not_processed' => 0
           ];
           $cur_parent_node->children[] = $new;
           $cur_parent_node = $new;
-
+          $cur_parent_level =$new->level;
+          $incc($new);
         }
       } else {
         // just text or markup, may be inside shortcode
-        $cur_parent_node->children[] = (object)[
+        $new = (object)[
           'text'=> $c, 
           'is_shortcode'=>false,
           'm' => null,
           'children' => [],
-          'parent'=> $cur_parent_node
+          'parent'=> $cur_parent_node,
+          'level' => $cur_parent_level+1,
+          'childs_not_processed' => 0
         ];
+        $cur_parent_node->children[] = $new;
+        //$incc($new);
       }
     }
 

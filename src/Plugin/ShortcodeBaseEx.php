@@ -22,11 +22,15 @@ abstract class ShortcodeBaseEx extends ShortcodeBase
     public $parse_tree_item = null;
     public static $global_id_counter = 0;
     public $global_id;
+    public $parent_shortcode = null;
 
     public function init($attributes, $parse_tree_item) {
-        dpm($this->getThemeId() . ' -- ' . $this->global_id . ' -- ' . self::$global_id_counter);
+        //dpm($this->getThemeId() . ' -- ' . $this->global_id . ' -- ' . self::$global_id_counter);
         $this->init_attributes = $attributes;
         $this->parse_tree_item = $parse_tree_item;
+        if(!empty($parse_tree_item->parent) && !empty($parse_tree_item->parent->is_shortcode))
+            $this->parent_shortcode = $parse_tree_item->parent->shortcode_plugin;
+
         $this->global_id = self::$global_id_counter;
         self::$global_id_counter++;
     }
@@ -57,12 +61,7 @@ abstract class ShortcodeBaseEx extends ShortcodeBase
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function process(array $attributes, $text, $langcode = Language::LANGCODE_NOT_SPECIFIED)
-    {
-
+    public function processPrepareVars(array $attributes, $text, $langcode = Language::LANGCODE_NOT_SPECIFIED) {
         // Merge with default attributes.
         $attributes = $this->getAttributes($this->getDefaultAttributes(),
             $attributes
@@ -95,9 +94,23 @@ abstract class ShortcodeBaseEx extends ShortcodeBase
         $tvars['text'] = $text;
         $tvars = $this->getThemeVars(true, $tvars);
 
+        return $tvars;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function process(array $attributes, $text, $langcode = Language::LANGCODE_NOT_SPECIFIED)
+    {
+        $tvars = $this->processPrepareVars($attributes, $text, $langcode);
         $output = $tvars + [
             '#theme' => $this->getThemeId(),
         ];
+
+        if($this->getPluginId() == 'row') {
+            dpm('**********');
+            dpm($output);
+        }
 
         return $this->render($output);
     }

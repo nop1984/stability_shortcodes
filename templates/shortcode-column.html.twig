@@ -1,0 +1,7 @@
+{% set attributes = phone ? attributes.addClass('col-xs-' ~ phone) : attributes %}
+{% set attributes = tablet ? attributes.addClass('col-sm-' ~ tablet) : attributes %}
+{% set attributes = desktop ? attributes.addClass('col-md-' ~ desktop) : attributes %}
+{% set attributes = wide ? attributes.addClass('col-ls-' ~ wide) : attributes %}
+<div {{attributes}}>
+{{text|raw}}
+</div>

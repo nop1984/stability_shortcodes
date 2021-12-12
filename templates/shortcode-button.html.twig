@@ -1,0 +1,13 @@
+{% set attributes = attributes.addClass('btn') %}
+{% set attributes = not color_type and color ? attributes.addClass(color) : attributes  %}
+{% set attributes = size ? attributes.addClass(size) : attributes  %}
+{% set style = color_type and custom_color ? attributes.style ~' '~ custom_color : attributes.style  %}
+{% set attributes = color_type and custom_color == 'ffffff' ? attributes.addClass('btn-white') : attributes %}
+{% set the_link = link ? link : '#' %}
+{# link might be processed as route based , was l() in d7 #}
+<a {{attributes}} href="{{the_link}}">
+{% if icon %}
+<i class="{{icon}}"></i>&nbsp;
+{% endif %}
+{{text}}
+</a>

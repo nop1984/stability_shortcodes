@@ -1,0 +1,10 @@
+{% if highlighted_text %}
+{% set text = position ? '<span>'~highlighted_text~'</span>' ~ text : text ~ '<span>'~highlighted_text~'</span>' %}
+{% endif %}
+{% if decorated %}
+<div {{attributes.addClass('title-decorated')}}>
+	<{{size}}>{{text}}</{{size}}>
+</div>
+{% else %}
+<{{size}} {{attributes}}>{{text}}</{{size}}>
+{% endif %}

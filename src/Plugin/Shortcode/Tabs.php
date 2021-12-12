@@ -25,6 +25,12 @@ class Tabs extends ShortcodeBaseEx {
 		return $res;
 	}
 
+  public function processPrepareVars(array $attributes, $text, $langcode = Language::LANGCODE_NOT_SPECIFIED) {
+    $tvars = parent::processPrepareVars($attributes, $text, $langcode);
+    $tvars['#tab_content'] = $this->tab_content; // populated in Tab.php
+    return $tvars;
+  }
+
   /**
    * {@inheritdoc}
    */

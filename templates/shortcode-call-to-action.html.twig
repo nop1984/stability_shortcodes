@@ -1,0 +1,12 @@
+{% set attributes = centered ? attributes.addClass('centered') : '' %}
+{% set link_class = link_class ? link_class : 'btn-primary' %}
+{% set link_class = color ? color : link_class %}
+{% set link_text = link_text ? : 'Read More'|t %}
+<div {{attributes.addClass('call-to-action')}}>
+	<div class="cta-txt">
+		{{text}}
+	</div>
+	<div class="cta-btn">
+		<a class="btn {{link_class}}" href="{{link}}">{{link_text}}</a>
+	</div>
+</div>

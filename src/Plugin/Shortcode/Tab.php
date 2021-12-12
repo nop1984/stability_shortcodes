@@ -17,52 +17,59 @@ use Drupal\stability_shortcodes\Plugin\ShortcodeBaseEx;
  */
 class Tab extends ShortcodeBaseEx {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function process(array $attributes, $text, $langcode = Language::LANGCODE_NOT_SPECIFIED) {
+	/**
+	 * {@inheritdoc}
+	 */
+    public function getThemeRegistry()
+    {
+        return [
+            $this->getThemeId() => [
+                'variables' => $this->getThemeVars(),
+            ],
+			$this->getThemeId().'_content' => [
+				'variables' => $this->getThemeVars(),
+			]
+        ];
+    }
 
-    // Merge with default attributes.
-    $attributes = $this->getAttributes([
-		'path' => '<front>',
-		'url' => '',
-		'title' => '',
-		'class' => '',
-		'id' => '',
-		'style' => '',
-		'media_file_url' => FALSE,
-	  ],
-		$attributes
-	  );
-	  $url = $attributes['url'];
-	  if (empty($url)) {
-		$url = $this->getUrlFromPath($attributes['path'], $attributes['media_file_url']);
-	  }
-	  $title = $this->getTitleFromAttributes($attributes['title'], $text);
-	  $class = $this->addClass($attributes['class'], 'button');
-  
-	  // Build element attributes to be used in twig.
-	  $element_attributes = [
-		'href' => $url,
-		'class' => $class,
-		'id' => $attributes['id'],
-		'style' => $attributes['style'],
-		'title' => $title,
-	  ];
-  
-	  // Filter away empty attributes.
-	  $element_attributes = array_filter($element_attributes);
-  
-	  $output = [
-		'#theme' => 'shortcode_button',
-	  // Not required for rendering, just for extra context.
-		'#url' => $url,
-		'#attributes' => $element_attributes,
-		'#text' => $text,
-	  ];
-  
-	  return $this->render($output);
-  }
+	public function getThemeVars($with_hash = false, $merge = []) {
+		/**
+		 * @todo resolve
+		 * tab_content from child tab::process results via service nesting like accordions
+		 */
+		$res = parent::getThemeVars($with_hash, array_merge(['tab_counter'=>null], $merge));
+		return $res;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function getDefaultAttributes() {
+		return ['icon'=>''] + parent::getDefaultAttributes();
+	}
+
+	/**
+     * {@inheritdoc}
+     */
+    public function process(array $attributes, $text, $langcode = Language::LANGCODE_NOT_SPECIFIED)
+    {
+        $tvars = $this->processPrepareVars($attributes, $text, $langcode);
+		$tvars['#tab_counter'] = $this->global_id;
+
+        $output = $tvars + [
+            '#theme' => $this->getThemeId().'_content',
+        ];
+
+		if(!empty($this->parent_shortcode)) {
+			$this->parent_shortcode->tab_content = empty($this->parent_shortcode->tab_content) ? '' : $this->parent_shortcode->tab_content;
+			$this->parent_shortcode->tab_content .= $this->render($output);
+		}
+
+		$output = $tvars + [
+            '#theme' => $this->getThemeId(),
+        ];
+        return $this->render($output);
+    }
 
   /**
    * {@inheritdoc}

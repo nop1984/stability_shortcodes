@@ -21,47 +21,10 @@ class FeaturedBoxes extends ShortcodeBaseEx {
    * {@inheritdoc}
    */
   public function process(array $attributes, $text, $langcode = Language::LANGCODE_NOT_SPECIFIED) {
-
-    // Merge with default attributes.
-    $attributes = $this->getAttributes([
-		'path' => '<front>',
-		'url' => '',
-		'title' => '',
-		'class' => '',
-		'id' => '',
-		'style' => '',
-		'media_file_url' => FALSE,
-	  ],
-		$attributes
-	  );
-	  $url = $attributes['url'];
-	  if (empty($url)) {
-		$url = $this->getUrlFromPath($attributes['path'], $attributes['media_file_url']);
-	  }
-	  $title = $this->getTitleFromAttributes($attributes['title'], $text);
-	  $class = $this->addClass($attributes['class'], 'button');
-  
-	  // Build element attributes to be used in twig.
-	  $element_attributes = [
-		'href' => $url,
-		'class' => $class,
-		'id' => $attributes['id'],
-		'style' => $attributes['style'],
-		'title' => $title,
-	  ];
-  
-	  // Filter away empty attributes.
-	  $element_attributes = array_filter($element_attributes);
-  
-	  $output = [
-		'#theme' => 'shortcode_button',
-	  // Not required for rendering, just for extra context.
-		'#url' => $url,
-		'#attributes' => $element_attributes,
-		'#text' => $text,
-	  ];
-  
-	  return $this->render($output);
+	  /**
+	   * @todo todo
+	   */
+	  die("todo");
   }
 
   /**

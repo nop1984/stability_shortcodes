@@ -1,0 +1,14 @@
+{{set attributes = type ? attributes.addClass(type) : attributes}}
+{{set attributes = align ? attributes.addClass(align) : attributes}}
+{{set attributes = animated ? attributes.addClass('icon-box-animated') : attributes}}
+<div {{attributes.addClass('icon-box')}}>
+	<div class="icon">
+		<i class="{{icon}}"></i>
+		{%  if bg_icon %}
+		<i class="{{bg_icon}}"></i>
+		{% endif %}
+	</div>
+	<div class="icon-box-body">
+		{{text}}
+	</div>
+</div>

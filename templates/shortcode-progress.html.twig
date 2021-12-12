@@ -1,0 +1,7 @@
+{% set inner_class = color ? color : '' %}
+<div {{type ? attributes.addClass('progress-' ~ type).addClass('progress') : attributes.addClass('progress') }}>
+    <div class = "progress-bar  {{inner_class}}" role="progressbar" aria-valuenow="{{percent}}" aria-valuemin="0" aria-valuemax="100" style="width: {{percent}}%;">
+      <span class="progress-label">{{attributes.title}}</span>
+      {{percent}}%
+    </div>
+  </div>
